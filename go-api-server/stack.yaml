@@ -1,0 +1,10 @@
+name: go-api-server
+version: 0.1.0
+description: Stack to create API server in go
+license: Apache-2.0
+language: go
+maintainers: 
+  - name: Jerome tarte
+    email: jerome.tarte@fr.ibm.com
+    github-id: jtarte
+default-template: api-server

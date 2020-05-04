@@ -1,0 +1,72 @@
+# Dockerfile for building the stack
+
+FROM golang:1.13.7
+
+# Install Dep package manager into the image
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+#Install Delve for debugging feature
+RUN go get -u github.com/go-delve/delve/cmd/dlv
+
+# See https://appsody.dev/docs/stacks/environment-variables for more information about each variable.
+
+ENV APPSODY_PROJECT_DIR=/project
+
+# Mount the application directory into the container filesystem, for example
+ENV APPSODY_MOUNTS=/src:/project/userapp/src
+
+# Define a volume for dependencies to be stored between runs, for example
+ENV APPSODY_DEPS=/project/src/userapp/deps/
+
+# Directories to watch for changes in
+ENV APPSODY_WATCH_DIR=/project/userapp/src
+
+# Directories to ignore changes in
+ENV APPSODY_WATCH_IGNORE_DIR= 
+
+# Types of file that will trigger a re-launch (change this to be specific to your application).
+ENV APPSODY_WATCH_REGEX="^.*.go$"
+
+# Optional command executed before RUN/TEST/DEBUG - typically used to install any dependencies from
+# the user application
+ENV APPSODY_PREP="(cd ./src/myapp && dep ensure)"
+
+# Configurations for appsody run
+# APPSODY_RUN should specify the command to launch your application
+# APPSODY_RUN_ON_CHANGE should specify the command to re-launch your application if triggered by a file change
+# APPSODY_RUN_KILL Signals whether to kill the server process before starting the APPSODY_RUN_ON_CHANGE action
+
+ENV APPSODY_RUN="go run myapp"
+ENV APPSODY_RUN_ON_CHANGE=$APPSODY_RUN
+ENV APPSODY_RUN_KILL=true
+
+# Configurations for appsody debug
+# APPSODY_DEBUG should specify the command to launch your application in debug mode
+# APPSODY_DEBUG_ON_CHANGE should specify the command to re-launch your application in debug mode if triggered by a file change
+# APPSODY_DEBUG_KILL Signals whether to kill the server process before starting the APPSODY_DEBUG_ON_CHANGE action
+
+ENV APPSODY_DEBUG="echo -n \"Debugging \"; cd ./src/myapp ; dlv debug --headless --listen=:2345 --log --api-version=2"
+ENV APPSODY_DEBUG_ON_CHANGE=$APPSODY_DEBUG
+ENV APPSODY_DEBUG_KILL=true
+
+# Configurations for appsody test
+# APPSODY_TEST should specify the command to launch your application in test mode
+# APPSODY_TEST_ON_CHANGE should specify the command to re-launch your application in test mode if triggered by a file change
+# APPSODY_TEST_KILL Signals whether to kill the server process before starting the APPSODY_TEST_ON_CHANGE action
+
+ENV APPSODY_TEST="go test myapp"
+ENV APPSODY_TEST_ON_CHANGE=$APPSODY_TEST
+ENV APPSODY_TEST_KILL=true
+
+# Copy the common components across into your stack filesystem (most stacks will need these)
+COPY ./LICENSE /licenses/
+COPY ./project /project
+COPY ./config /config
+
+ENV GOPATH=/project/userapp
+
+# Set the working directory to the project directory, which typically contains the stack components and userapp
+WORKDIR /project/userapp
+
+# Expose the relevant ports (change this to be specific to your application).
+EXPOSE 8080
+EXPOSE 2345

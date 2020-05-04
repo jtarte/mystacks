@@ -1,0 +1,6 @@
+{
+    //"go.gopath": "${workspaceFolder}"
+    "go.inferGopath": true,
+    //update the follwoing var with your environment settings
+    "go.toolsGopath": "Users/jtarte/go"
+}
